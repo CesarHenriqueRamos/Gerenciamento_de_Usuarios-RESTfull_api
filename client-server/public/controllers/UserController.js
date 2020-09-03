@@ -20,10 +20,12 @@ class UserController{
             }
                this.getPhoto(this.formEl).then((content)=>{
                 value.photo = content;
-                value.save();
-                this.addUser(value);
+                value.save().then( user =>{
+                this.addUser(user);
                 this.formEl.reset();
                 btn.disabled = false;
+                });
+              
                },(e)=>{
                    console.log(e);
                })
@@ -104,13 +106,7 @@ class UserController{
         this.addEventsTR(tr);
         return tr;
     }
-    //metodo para adicionar um novo usuario
-    addUser(dataUser){
-        let tr = this.getTr(dataUser);
-        
-        this.tableEl.appendChild(tr);
-        this.updateCout();
-    }
+   
     //addUser
     updateCout(){
         let numberUser = 0;
@@ -151,11 +147,13 @@ class UserController{
 
                 let user = new User();
                 user.loadFormJSON(result);
-                user.save();
-                this.getTr(user, tr);
-                this.updateCout();
-                btn.disabled = false;
-                this.formUpdateEl.reset();
+                user.save().then(user => {
+                    this.getTr(user, tr);
+                    this.updateCout();
+                    btn.disabled = false;
+                    this.formUpdateEl.reset();
+                });
+                
 
                },(e)=>{
                    console.log(e);
@@ -211,12 +209,21 @@ class UserController{
     //inserir sessionStorage
     
     selectAll(){
-        let users = User.getStorageUsers();
-        users.forEach(datauser=>{
-            let user = new User();
-            user.loadFormJSON(datauser);
-            this.addUser(user);
-        })
+
+        HttpRequest.get('/users').then(data =>{
+            data.forEach(dataUser => {
+                let user = new User();
+                user.loadFormJSON(dataUser);
+                this.addUser(user);
+            });
+        });        
+    }
+     //metodo para adicionar um novo usuario
+     addUser(dataUser){
+        let tr = this.getTr(dataUser);
+        
+        this.tableEl.appendChild(tr);
+        this.updateCout();
     }
 
 }
